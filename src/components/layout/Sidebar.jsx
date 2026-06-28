@@ -2,23 +2,28 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
+import {
+  HiHome, HiClipboardDocumentList, HiCalendarDays, HiClock,
+  HiUserGroup, HiUser, HiFolderOpen, HiCog6Tooth, HiChartBarSquare,
+  HiArrowRightOnRectangle, HiXMark,
+} from 'react-icons/hi2'
 
 const employeeLinks = [
-  { to: '/employee', label: 'Dashboard', icon: '🏠', end: true },
-  { to: '/employee/timesheet', label: 'My Timesheet', icon: '📋' },
-  { to: '/employee/history', label: 'History', icon: '📅' },
+  { to: '/employee', label: 'Dashboard', icon: HiHome, end: true },
+  { to: '/employee/timesheet', label: 'My Timesheet', icon: HiClipboardDocumentList },
+  { to: '/employee/history', label: 'History', icon: HiCalendarDays },
 ]
 const supervisorLinks = [
-  { to: '/supervisor', label: 'Dashboard', icon: '🏠', end: true },
-  { to: '/supervisor/pending', label: 'Pending Reviews', icon: '⏳' },
-  { to: '/supervisor/team', label: 'Team Overview', icon: '👥' },
+  { to: '/supervisor', label: 'Dashboard', icon: HiHome, end: true },
+  { to: '/supervisor/pending', label: 'Pending Reviews', icon: HiClock },
+  { to: '/supervisor/team', label: 'Team Overview', icon: HiUserGroup },
 ]
 const adminLinks = [
-  { to: '/admin', label: 'Dashboard', icon: '🏠', end: true },
-  { to: '/admin/employees', label: 'Employees', icon: '👤' },
-  { to: '/admin/projects', label: 'Projects', icon: '📁' },
-  { to: '/admin/ot-policy', label: 'OT Policy', icon: '⚙️' },
-  { to: '/admin/reports', label: 'Reports', icon: '📊' },
+  { to: '/admin', label: 'Dashboard', icon: HiHome, end: true },
+  { to: '/admin/employees', label: 'Employees', icon: HiUser },
+  { to: '/admin/projects', label: 'Projects', icon: HiFolderOpen },
+  { to: '/admin/ot-policy', label: 'OT Policy', icon: HiCog6Tooth },
+  { to: '/admin/reports', label: 'Reports', icon: HiChartBarSquare },
 ]
 
 const roleLinks = { employee: employeeLinks, supervisor: supervisorLinks, admin: adminLinks }
@@ -61,9 +66,7 @@ export default function Sidebar({ mobile, onClose }) {
         </div>
         {mobile && (
           <button onClick={onClose} className="ml-auto text-slate-400 hover:text-white">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <HiXMark className="w-5 h-5" />
           </button>
         )}
       </div>
@@ -85,24 +88,27 @@ export default function Sidebar({ mobile, onClose }) {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
-        {links.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.end}
-            onClick={mobile ? onClose : undefined}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
-                isActive
-                  ? 'bg-indigo-600/20 text-indigo-400 font-medium border border-indigo-500/30'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`
-            }
-          >
-            <span className="text-base">{link.icon}</span>
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
+        {links.map((link) => {
+          const Icon = link.icon
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.end}
+              onClick={mobile ? onClose : undefined}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
+                  isActive
+                    ? 'bg-indigo-600/20 text-indigo-400 font-medium border border-indigo-500/30'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                }`
+              }
+            >
+              <Icon className="w-4.5 h-4.5 shrink-0" style={{ width: '1.1rem', height: '1.1rem' }} />
+              <span>{link.label}</span>
+            </NavLink>
+          )
+        })}
       </nav>
 
       {/* Department & Logout */}
@@ -117,7 +123,7 @@ export default function Sidebar({ mobile, onClose }) {
           disabled={loggingOut}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-red-900/30 hover:text-red-400 transition-all duration-150"
         >
-          <span>🚪</span>
+          <HiArrowRightOnRectangle className="w-4 h-4 shrink-0" />
           <span>{loggingOut ? 'Signing out...' : 'Sign Out'}</span>
         </button>
       </div>
