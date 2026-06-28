@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
-import { format, startOfMonth, endOfMonth } from 'date-fns'
+import { collection, query, where, getDocs } from 'firebase/firestore'
+import { format } from 'date-fns'
 import { db } from '../../firebase/config'
 import { minutesToHHMM } from '../../utils/otCalculations'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import StatusBadge from '../../components/common/StatusBadge'
+import { HiClock, HiUserGroup, HiCalendarDays, HiCheckCircle } from 'react-icons/hi2'
 
 export default function SupervisorDashboard() {
   const [pending, setPending] = useState([])
@@ -46,9 +47,9 @@ export default function SupervisorDashboard() {
   }, [])
 
   const stats = [
-    { label: 'Pending Reviews', value: pending.length, icon: '⏳', color: 'text-amber-400' },
-    { label: 'Team Members', value: employees.length, icon: '👥', color: 'text-sky-400' },
-    { label: 'Month', value: format(new Date(), 'MMM yyyy'), icon: '📅', color: 'text-indigo-400' },
+    { label: 'Pending Reviews', value: pending.length, icon: HiClock, color: 'text-amber-400' },
+    { label: 'Team Members', value: employees.length, icon: HiUserGroup, color: 'text-sky-400' },
+    { label: 'Month', value: format(new Date(), 'MMM yyyy'), icon: HiCalendarDays, color: 'text-indigo-400' },
   ]
 
   return (
@@ -61,15 +62,18 @@ export default function SupervisorDashboard() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-slate-800 rounded-xl border border-slate-700/50 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">{s.icon}</span>
-              <span className="text-slate-400 text-xs">{s.label}</span>
+        {stats.map((s) => {
+          const Icon = s.icon
+          return (
+            <div key={s.label} className="bg-slate-800 rounded-xl border border-slate-700/50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon className={`w-4 h-4 ${s.color}`} />
+                <span className="text-slate-400 text-xs">{s.label}</span>
+              </div>
+              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             </div>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {loading ? (
@@ -84,7 +88,7 @@ export default function SupervisorDashboard() {
           </div>
           {pending.length === 0 ? (
             <div className="py-12 text-center">
-              <p className="text-4xl mb-3">✅</p>
+              <HiCheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
               <p className="text-slate-400 font-medium">All caught up!</p>
               <p className="text-slate-500 text-sm mt-1">No pending timesheets to review</p>
             </div>
