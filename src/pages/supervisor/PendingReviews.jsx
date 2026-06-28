@@ -13,6 +13,7 @@ import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
 import Modal from '../../components/common/Modal'
+import { HiCheckCircle, HiXMark, HiCheck } from 'react-icons/hi2'
 
 export default function PendingReviews() {
   const { userProfile } = useAuth()
@@ -117,7 +118,11 @@ export default function PendingReviews() {
       {loading ? (
         <LoadingSpinner text="Loading submissions..." />
       ) : approvals.length === 0 ? (
-        <EmptyState icon="✅" title="All caught up!" description="No pending timesheets to review" />
+        <EmptyState
+          icon={<HiCheckCircle className="w-12 h-12 text-emerald-500" />}
+          title="All caught up!"
+          description="No pending timesheets to review"
+        />
       ) : (
         <div className="bg-slate-800 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
           {approvals.map((item) => (
@@ -233,16 +238,18 @@ export default function PendingReviews() {
               <button
                 onClick={() => handleDecision('reject')}
                 disabled={processing}
-                className="flex-1 py-2.5 bg-red-900/30 hover:bg-red-800/50 disabled:opacity-60 text-red-400 font-medium rounded-lg text-sm border border-red-700/50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-900/30 hover:bg-red-800/50 disabled:opacity-60 text-red-400 font-medium rounded-lg text-sm border border-red-700/50 transition-colors"
               >
-                {processing ? 'Processing...' : '❌ Reject'}
+                <HiXMark className="w-4 h-4" />
+                <span>{processing ? 'Processing...' : 'Reject'}</span>
               </button>
               <button
                 onClick={() => handleDecision('approve')}
                 disabled={processing}
-                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm transition-colors"
               >
-                {processing ? 'Processing...' : '✅ Approve'}
+                <HiCheck className="w-4 h-4" />
+                <span>{processing ? 'Processing...' : 'Approve'}</span>
               </button>
             </div>
           </div>
