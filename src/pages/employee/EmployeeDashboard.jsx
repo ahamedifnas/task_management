@@ -7,6 +7,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import { minutesToHHMM } from '../../utils/otCalculations'
 import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
+import {
+  HiClipboardDocumentList, HiClock, HiArrowTrendingUp, HiCheckCircle, HiInbox,
+} from 'react-icons/hi2'
 
 export default function EmployeeDashboard() {
   const { userProfile } = useAuth()
@@ -42,25 +45,25 @@ export default function EmployeeDashboard() {
     {
       label: "Today's Status",
       value: todayWorkday ? todayWorkday.status : 'No Entry',
-      icon: '📋',
+      icon: HiClipboardDocumentList,
       color: 'text-indigo-400',
     },
     {
       label: "Today's Hours",
       value: todayWorkday ? minutesToHHMM(todayWorkday.totalWorkMin || 0) : '—',
-      icon: '⏱️',
+      icon: HiClock,
       color: 'text-sky-400',
     },
     {
       label: 'Overtime Today',
       value: todayWorkday ? minutesToHHMM(todayWorkday.overtimeMin || 0) : '—',
-      icon: '📈',
+      icon: HiArrowTrendingUp,
       color: 'text-amber-400',
     },
     {
       label: 'Submissions This Week',
       value: recentDays.filter((d) => ['SUBMITTED', 'APPROVED'].includes(d.status)).length,
-      icon: '✅',
+      icon: HiCheckCircle,
       color: 'text-emerald-400',
     },
   ]
@@ -71,7 +74,7 @@ export default function EmployeeDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-white text-2xl font-bold">
-            Good {getGreeting()}, {userProfile?.name?.split(' ')[0] || 'there'} 👋
+            Good {getGreeting()}, {userProfile?.name?.split(' ')[0] || 'there'}
           </h1>
           <p className="text-slate-400 text-sm mt-0.5">
             {format(new Date(), 'EEEE, MMMM do yyyy')}
@@ -92,15 +95,18 @@ export default function EmployeeDashboard() {
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="bg-slate-800 rounded-xl border border-slate-700/50 p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">{stat.icon}</span>
-                  <span className="text-slate-400 text-xs">{stat.label}</span>
+            {stats.map((stat) => {
+              const Icon = stat.icon
+              return (
+                <div key={stat.label} className="bg-slate-800 rounded-xl border border-slate-700/50 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className={`w-4 h-4 ${stat.color}`} />
+                    <span className="text-slate-400 text-xs">{stat.label}</span>
+                  </div>
+                  <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
                 </div>
-                <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Recent Activity */}
@@ -113,7 +119,7 @@ export default function EmployeeDashboard() {
             </div>
             {recentDays.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-slate-500 text-4xl mb-3">📭</p>
+                <HiInbox className="w-10 h-10 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-400 font-medium">No timesheets yet</p>
                 <p className="text-slate-500 text-sm mt-1">Start by creating today's entry</p>
               </div>
