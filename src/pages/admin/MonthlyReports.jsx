@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import {
   collection, getDocs, addDoc, updateDoc, doc, query,
-  where, orderBy, serverTimestamp,
+  where, serverTimestamp,
 } from 'firebase/firestore'
-import { format, getDaysInMonth, startOfMonth, endOfMonth } from 'date-fns'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
 import toast from 'react-hot-toast'
 import { db } from '../../firebase/config'
 import { calcOTAmount, minutesToHHMM } from '../../utils/otCalculations'
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
+import {
+  HiArrowPath, HiExclamationTriangle, HiTableCells, HiDocumentArrowDown, HiChartBarSquare,
+} from 'react-icons/hi2'
 
 export default function MonthlyReports() {
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'))
@@ -137,16 +140,19 @@ export default function MonthlyReports() {
             disabled={generating}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
           >
-            {generating ? '⏳' : '🔄'}
+            <HiArrowPath className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
             <span>{generating ? 'Generating...' : 'Generate'}</span>
           </button>
         </div>
       </div>
 
       {!otPolicy && (
-        <div className="bg-amber-900/20 border border-amber-700/30 rounded-xl px-5 py-4">
-          <p className="text-amber-400 text-sm font-medium">⚠️ No OT policy configured</p>
-          <p className="text-amber-300/70 text-xs mt-1">Configure an OT policy before generating reports.</p>
+        <div className="bg-amber-900/20 border border-amber-700/30 rounded-xl px-5 py-4 flex items-start gap-3">
+          <HiExclamationTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-amber-400 text-sm font-medium">No OT policy configured</p>
+            <p className="text-amber-300/70 text-xs mt-1">Configure an OT policy before generating reports.</p>
+          </div>
         </div>
       )}
 
@@ -176,13 +182,15 @@ export default function MonthlyReports() {
               onClick={() => { exportToExcel(enriched, `ot_report_${selectedMonth}`); toast.success('Excel exported!') }}
               className="flex items-center gap-2 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              <span>📊</span><span>Export Excel</span>
+              <HiTableCells className="w-4 h-4" />
+              <span>Export Excel</span>
             </button>
             <button
               onClick={() => { exportToPDF(enriched, selectedMonth, `ot_report_${selectedMonth}`); toast.success('PDF exported!') }}
               className="flex items-center gap-2 px-4 py-2.5 bg-red-700 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              <span>📄</span><span>Export PDF</span>
+              <HiDocumentArrowDown className="w-4 h-4" />
+              <span>Export PDF</span>
             </button>
           </div>
         </>
@@ -192,7 +200,7 @@ export default function MonthlyReports() {
         <LoadingSpinner text="Loading summaries..." />
       ) : enriched.length === 0 ? (
         <EmptyState
-          icon="📊"
+          icon={<HiChartBarSquare className="w-12 h-12" />}
           title="No summaries generated"
           description={`Click "Generate" to create the monthly report for ${selectedMonth}`}
         />
