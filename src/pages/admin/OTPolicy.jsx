@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { db } from '../../firebase/config'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
+import { HiArrowDownTray } from 'react-icons/hi2'
 
 const ROUNDING_RULES = [
   { value: 'none', label: 'No rounding' },
@@ -142,9 +143,10 @@ export default function OTPolicy() {
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold rounded-lg text-sm transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-semibold rounded-lg text-sm transition-colors"
               >
-                {saving ? 'Saving...' : '💾 Save Policy'}
+                <HiArrowDownTray className="w-4 h-4" />
+                <span>{saving ? 'Saving...' : 'Save Policy'}</span>
               </button>
             </form>
           </div>
