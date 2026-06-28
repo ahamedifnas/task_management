@@ -1,6 +1,9 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
+// Keep in sync with AuthContext DEV_BYPASS
+const DEV_BYPASS = true
+
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser, userProfile, loading } = useAuth()
 
@@ -12,7 +15,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     )
   }
 
-  if (!currentUser) return <Navigate to="/login" replace />
+  if (!DEV_BYPASS && !currentUser) return <Navigate to="/login" replace />
 
   if (allowedRoles && userProfile && !allowedRoles.includes(userProfile.role)) {
     const redirectMap = { admin: '/admin', supervisor: '/supervisor', employee: '/employee' }
