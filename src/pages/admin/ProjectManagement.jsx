@@ -7,6 +7,7 @@ import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
 import Modal from '../../components/common/Modal'
+import { HiFolderOpen } from 'react-icons/hi2'
 
 export default function ProjectManagement() {
   const [projects, setProjects] = useState([])
@@ -104,14 +105,18 @@ export default function ProjectManagement() {
       {loading ? (
         <LoadingSpinner text="Loading projects..." />
       ) : filtered.length === 0 ? (
-        <EmptyState icon="📁" title="No projects found" description="Create your first project" />
+        <EmptyState
+          icon={<HiFolderOpen className="w-12 h-12" />}
+          title="No projects found"
+          description="Create your first project"
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((proj) => (
             <div key={proj.id} className="bg-slate-800 rounded-xl border border-slate-700/50 p-5">
               <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-xl shrink-0">
-                  📁
+                <div className="w-10 h-10 rounded-lg bg-violet-600/20 border border-violet-500/30 flex items-center justify-center shrink-0">
+                  <HiFolderOpen className="w-5 h-5 text-violet-400" />
                 </div>
                 <StatusBadge status={proj.status || 'active'} />
               </div>
