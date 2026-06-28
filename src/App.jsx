@@ -1,122 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
+import { useAuth } from './contexts/AuthContext'
 
-function App() {
-  const [count, setCount] = useState(0)
+import Layout from './components/layout/Layout'
+import ProtectedRoute from './components/common/ProtectedRoute'
 
+import Login from './pages/auth/Login'
+
+import EmployeeDashboard from './pages/employee/EmployeeDashboard'
+import Timesheet from './pages/employee/Timesheet'
+import History from './pages/employee/History'
+
+import SupervisorDashboard from './pages/supervisor/SupervisorDashboard'
+import PendingReviews from './pages/supervisor/PendingReviews'
+import TeamOverview from './pages/supervisor/TeamOverview'
+
+import AdminDashboard from './pages/admin/AdminDashboard'
+import EmployeeManagement from './pages/admin/EmployeeManagement'
+import ProjectManagement from './pages/admin/ProjectManagement'
+import OTPolicy from './pages/admin/OTPolicy'
+import MonthlyReports from './pages/admin/MonthlyReports'
+
+function RoleRedirect() {
+  const { userProfile, loading } = useAuth()
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+      </div>
+    )
+  }
+  if (!userProfile) return <Navigate to="/login" replace />
+  const redirectMap = { admin: '/admin', supervisor: '/supervisor', employee: '/employee' }
+  return <Navigate to={redirectMap[userProfile.role] || '/login'} replace />
+}
+
+export default function App() {
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: { background: '#1e293b', color: '#f1f5f9', border: '1px solid #334155' },
+          success: { iconTheme: { primary: '#10b981', secondary: '#f1f5f9' } },
+          error: { iconTheme: { primary: '#ef4444', secondary: '#f1f5f9' } },
+        }}
+      />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<RoleRedirect />} />
+        <Route path="/employee" element={<ProtectedRoute allowedRoles={['employee']}><Layout /></ProtectedRoute>}>
+          <Route index element={<EmployeeDashboard />} />
+          <Route path="timesheet" element={<Timesheet />} />
+          <Route path="history" element={<History />} />
+        </Route>
+        <Route path="/supervisor" element={<ProtectedRoute allowedRoles={['supervisor']}><Layout /></ProtectedRoute>}>
+          <Route index element={<SupervisorDashboard />} />
+          <Route path="pending" element={<PendingReviews />} />
+          <Route path="team" element={<TeamOverview />} />
+        </Route>
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Layout /></ProtectedRoute>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="employees" element={<EmployeeManagement />} />
+          <Route path="projects" element={<ProjectManagement />} />
+          <Route path="ot-policy" element={<OTPolicy />} />
+          <Route path="reports" element={<MonthlyReports />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   )
 }
-
-export default App
