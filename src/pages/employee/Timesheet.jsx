@@ -13,6 +13,9 @@ import { calcDuration, hasOverlap, minutesToHHMM } from '../../utils/otCalculati
 import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import Modal from '../../components/common/Modal'
+import {
+  HiPencilSquare, HiTrash, HiClock, HiCheckCircle, HiXCircle, HiCheck,
+} from 'react-icons/hi2'
 
 export default function Timesheet() {
   const { userProfile } = useAuth()
@@ -260,7 +263,7 @@ export default function Timesheet() {
 
             {tasks.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-4xl mb-3">⏰</p>
+                <HiClock className="w-10 h-10 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-400 font-medium">No tasks yet</p>
                 <p className="text-slate-500 text-sm mt-1">Add your first task to start tracking</p>
               </div>
@@ -294,13 +297,13 @@ export default function Timesheet() {
                               onClick={() => openEditTask(task)}
                               className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-700 rounded transition-colors"
                             >
-                              ✏️
+                              <HiPencilSquare className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => deleteTask(task.id)}
                               className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded transition-colors"
                             >
-                              🗑️
+                              <HiTrash className="w-4 h-4" />
                             </button>
                           </div>
                         )}
@@ -315,7 +318,10 @@ export default function Timesheet() {
           {/* Submit / Status */}
           {workday?.status === 'REJECTED' && (
             <div className="bg-red-900/20 border border-red-700/50 rounded-xl px-5 py-4">
-              <p className="text-red-400 font-medium text-sm">❌ Rejected</p>
+              <div className="flex items-center gap-2 mb-1">
+                <HiXCircle className="w-4 h-4 text-red-400" />
+                <p className="text-red-400 font-medium text-sm">Rejected</p>
+              </div>
               {workday.rejectionComment && (
                 <p className="text-red-300/70 text-sm mt-1">{workday.rejectionComment}</p>
               )}
@@ -327,21 +333,24 @@ export default function Timesheet() {
             <button
               onClick={submitForApproval}
               disabled={submitting}
-              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-emerald-500/20"
             >
-              {submitting ? 'Submitting...' : '✅ Submit for Approval'}
+              <HiCheck className="w-5 h-5" />
+              <span>{submitting ? 'Submitting...' : 'Submit for Approval'}</span>
             </button>
           )}
 
           {workday?.status === 'SUBMITTED' && (
-            <div className="bg-amber-900/20 border border-amber-700/50 rounded-xl px-5 py-3 text-center">
-              <p className="text-amber-400 font-medium text-sm">⏳ Awaiting Supervisor Approval</p>
+            <div className="bg-amber-900/20 border border-amber-700/50 rounded-xl px-5 py-3 text-center flex items-center justify-center gap-2">
+              <HiClock className="w-4 h-4 text-amber-400" />
+              <p className="text-amber-400 font-medium text-sm">Awaiting Supervisor Approval</p>
             </div>
           )}
 
           {workday?.status === 'APPROVED' && (
-            <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-xl px-5 py-3 text-center">
-              <p className="text-emerald-400 font-medium text-sm">✅ Approved</p>
+            <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-xl px-5 py-3 text-center flex items-center justify-center gap-2">
+              <HiCheckCircle className="w-4 h-4 text-emerald-400" />
+              <p className="text-emerald-400 font-medium text-sm">Approved</p>
             </div>
           )}
         </>
