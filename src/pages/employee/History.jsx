@@ -8,6 +8,7 @@ import { minutesToHHMM } from '../../utils/otCalculations'
 import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
+import { HiInbox } from 'react-icons/hi2'
 
 export default function History() {
   const { userProfile } = useAuth()
@@ -91,7 +92,11 @@ export default function History() {
       {loading ? (
         <LoadingSpinner text="Loading history..." />
       ) : filtered.length === 0 ? (
-        <EmptyState icon="📭" title="No entries found" description="No timesheet entries match your filter" />
+        <EmptyState
+          icon={<HiInbox className="w-12 h-12" />}
+          title="No entries found"
+          description="No timesheet entries match your filter"
+        />
       ) : (
         <div className="bg-slate-800 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
           {filtered.map((day) => (
