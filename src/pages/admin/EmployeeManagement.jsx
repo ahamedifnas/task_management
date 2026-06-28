@@ -8,6 +8,7 @@ import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
 import Modal from '../../components/common/Modal'
+import { HiUser } from 'react-icons/hi2'
 
 const ROLES = ['employee', 'supervisor', 'admin']
 const DEPARTMENTS = ['Engineering', 'Sales', 'HR', 'Finance', 'Operations', 'Marketing', 'IT', 'Other']
@@ -124,7 +125,7 @@ export default function EmployeeManagement() {
       {loading ? (
         <LoadingSpinner text="Loading employees..." />
       ) : filtered.length === 0 ? (
-        <EmptyState icon="👤" title="No employees found" description="Add your first employee to get started" />
+        <EmptyState icon={<HiUser className="w-12 h-12" />} title="No employees found" description="Add your first employee to get started" />
       ) : (
         <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
           <div className="overflow-x-auto">
