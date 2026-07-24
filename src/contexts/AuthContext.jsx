@@ -7,63 +7,119 @@ import {
 import { doc, getDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/config'
 
-// ─── DEV BYPASS ──────────────────────────────────────────────────────────────
-// Set to true  → skip Firebase Auth, use mock profile below (no login required)
-// Set to false → normal Firebase Auth flow
-const DEV_BYPASS = true
+const DEV_BYPASS = false
 
 const DEV_PROFILE = {
   uid: 'dev-user-001',
   name: 'Dev Admin',
   email: 'dev@local.test',
-  role: 'admin',          // change to 'employee' | 'supervisor' | 'admin'
+  role: 'admin',
   department: 'IT',
   basicSalary: 100000,
   status: 'active',
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(DEV_BYPASS ? DEV_PROFILE : null)
-  const [userProfile, setUserProfile] = useState(DEV_BYPASS ? DEV_PROFILE : null)
+  const [currentUser, setCurrentUser] = useState(
+    DEV_BYPASS ? DEV_PROFILE : null
+  )
+
+  const [userProfile, setUserProfile] = useState(
+    DEV_BYPASS ? DEV_PROFILE : null
+  )
+
   const [loading, setLoading] = useState(!DEV_BYPASS)
 
   async function login(email, password) {
-    if (DEV_BYPASS) return
-    const result = await signInWithEmailAndPassword(auth, email, password)
-    return result
+    try {
+      console.log("Login started...");
+
+      const result = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      console.log("Login Success");
+      console.log(result.user);
+
+      return result;
+    } catch (error) {
+      console.error("Login Error:", error);
+      throw error;
+    }
   }
 
   async function logout() {
-    if (DEV_BYPASS) return
     await signOut(auth)
     setUserProfile(null)
   }
 
   useEffect(() => {
-    if (DEV_BYPASS) return
+    if (DEV_BYPASS) {
+      setLoading(false)
+      return
+    }
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user)
-      if (user) {
-        const docRef = doc(db, 'users', user.uid)
-        const docSnap = await getDoc(docRef)
-        if (docSnap.exists()) {
-          setUserProfile({ uid: user.uid, ...docSnap.data() })
-        }
-      } else {
+      console.log("AUTH STATE:", user)
+
+      if (!user) {
+        setCurrentUser(null)
         setUserProfile(null)
+        setLoading(false)
+        return
       }
+
+      setCurrentUser(user)
+
+      try {
+        const docRef = doc(db, "users", user.uid)
+        const docSnap = await getDoc(docRef)
+
+        console.log("Profile Exists:", docSnap.exists())
+
+        if (docSnap.exists()) {
+          console.log(docSnap.data())
+
+          setUserProfile({
+            uid: user.uid,
+            ...docSnap.data(),
+          })
+        } else {
+          console.log("No Firestore profile found")
+
+          setUserProfile({
+            uid: user.uid,
+            email: user.email,
+            role: "employee",
+          })
+        }
+      } catch (err) {
+        console.error("Firestore Error:", err)
+      }
+
       setLoading(false)
     })
+
     return unsubscribe
   }, [])
 
-  const value = { currentUser, userProfile, login, logout, loading }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        userProfile,
+        login,
+        logout,
+        loading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {

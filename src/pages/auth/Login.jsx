@@ -10,17 +10,24 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm()
 
-  async function onSubmit({ email, password }) {
-    setLoading(true)
-    try {
-      await login(email, password)
-      // redirect handled in App.jsx based on role
-    } catch (err) {
-      toast.error(err.code === 'auth/invalid-credential' ? 'Invalid email or password' : 'Login failed. Try again.')
-    } finally {
-      setLoading(false)
-    }
+ async function onSubmit({ email, password }) {
+  setLoading(true)
+
+  try {
+    await login(email, password)
+
+    // Temporary redirect
+    navigate("/")
+  } catch (err) {
+    toast.error(
+      err.code === "auth/invalid-credential"
+        ? "Invalid email or password"
+        : "Login failed"
+    )
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">

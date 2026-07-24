@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 
 // Keep in sync with AuthContext DEV_BYPASS
-const DEV_BYPASS = true
+const DEV_BYPASS = false
 
 export default function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser, userProfile, loading } = useAuth()
