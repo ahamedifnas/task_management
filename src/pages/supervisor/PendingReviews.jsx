@@ -23,6 +23,7 @@ export default function PendingReviews() {
   const [selectedApproval, setSelectedApproval] = useState(null)
   const [tasks, setTasks] = useState([])
   const [projects, setProjects] = useState([])
+  const [otPolicy, setOtPolicy] = useState(null)
   const [comment, setComment] = useState('')
   const [processing, setProcessing] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -33,8 +34,12 @@ export default function PendingReviews() {
   }, [])
 
   async function fetchProjects() {
-    const snap = await getDocs(collection(db, 'projects'))
-    setProjects(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    const [projectSnap, policySnap] = await Promise.all([
+      getDocs(collection(db, 'projects')),
+      getDocs(collection(db, 'otPolicy')),
+    ])
+    setProjects(projectSnap.docs.map((d) => ({ id: d.id, ...d.data() })))
+    if (!policySnap.empty) setOtPolicy(policySnap.docs[0].data())
   }
 
   async function fetchPending() {
@@ -95,9 +100,9 @@ export default function PendingReviews() {
         approvedAt: serverTimestamp(),
       })
       await updateDoc(doc(db, 'workdays', selectedApproval.workday.id), {
-        status,
-        rejectionComment: decision === 'reject' ? comment : null,
-      })
+  status,
+  rejectionComment: decision === 'reject' ? comment : null,
+})
       toast.success(`Timesheet ${decision === 'approve' ? 'approved' : 'rejected'}!`)
       setDetailOpen(false)
       setApprovals((prev) => prev.filter((a) => a.id !== selectedApproval.id))
@@ -142,12 +147,11 @@ export default function PendingReviews() {
                       ? format(new Date(item.workday.workDate + 'T00:00:00'), 'EEE, MMM d, yyyy')
                       : '—'}
                     {' · '}
-                    {minutesToHHMM(item.workday?.totalWorkMin || 0)}
-                    {item.workday?.overtimeMin > 0 && (
-                      <span className="text-amber-500 ml-1">
-                        · {minutesToHHMM(item.workday.overtimeMin)} OT
-                      </span>
-                    )}
+                 {Number(item.workday?.overtimeMin) > 0 && (
+  <span className="text-amber-500 ml-1">
+    · {minutesToHHMM(Number(item.workday?.overtimeMin) || 0)} OT
+  </span>
+)}
                   </p>
                 </div>
               </div>
@@ -190,7 +194,9 @@ export default function PendingReviews() {
               </div>
               <div className="bg-slate-900/50 rounded-lg p-3">
                 <p className="text-slate-500 text-xs mb-1">Overtime</p>
-                <p className="text-amber-400 text-sm font-bold">{minutesToHHMM(selectedApproval.workday?.overtimeMin)}</p>
+                <p className="text-amber-400 text-sm font-bold">
+  {minutesToHHMM(Number(selectedApproval.workday?.overtimeMin) || 0)}
+</p>
               </div>
             </div>
 

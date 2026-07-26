@@ -78,8 +78,11 @@ export default function MonthlyReports() {
       const newSummaries = []
       for (const emp of employees) {
         const days = wdByEmp[emp.id] || []
-        const totalWorkMin = days.reduce((s, d) => s + (d.totalWorkMin || 0), 0)
-        const overtimeMin = days.reduce((s, d) => s + (d.overtimeMin || 0), 0)
+        const totalWorkMin = days.reduce((s, d) => s + (Number(d.totalWorkMin) || 0), 0)
+       const overtimeMin = days.reduce(
+  (sum, day) => sum + (Number(day.overtimeMin) || 0),
+  0
+)
         const otAmount = calcOTAmount(emp.basicSalary, otPolicy.stdHoursPerDay, otPolicy.multiplier, overtimeMin, selectedMonth)
 
         const existing = summaries.find((s) => s.employeeId === emp.id)

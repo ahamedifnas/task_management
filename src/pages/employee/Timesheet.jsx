@@ -2,14 +2,14 @@ import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import {
-  collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
-  setDoc, serverTimestamp, query, where, orderBy,
+  collection, doc, getDocs, addDoc, updateDoc, deleteDoc,
+  serverTimestamp, query, where, orderBy,
 } from 'firebase/firestore'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { db } from '../../firebase/config'
 import { useAuth } from '../../contexts/AuthContext'
-import { calcDuration, hasOverlap, minutesToHHMM } from '../../utils/otCalculations'
+import { calcDuration, calcOvertimeMinutes, hasOverlap, minutesToHHMM } from '../../utils/otCalculations'
 import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import Modal from '../../components/common/Modal'
@@ -92,9 +92,12 @@ export default function Timesheet() {
   }
 
   async function updateWorkdayTotals(wd, updatedTasks) {
-    const totalMin = updatedTasks.reduce((sum, t) => sum + (t.durationMin || 0), 0)
-    const stdMin = (otPolicy?.stdHoursPerDay || 8) * 60
-    const overtimeMin = Math.max(0, totalMin - stdMin)
+    const totalMin = updatedTasks.reduce((sum, task) => sum + (Number(task.durationMin) || 0), 0)
+    const overtimeMin = calcOvertimeMinutes(
+      totalMin,
+      otPolicy?.stdHoursPerDay,
+      otPolicy?.roundingRule
+    )
     await updateDoc(doc(db, 'workdays', wd.id), { totalWorkMin: totalMin, overtimeMin })
     setWorkday((prev) => ({ ...prev, totalWorkMin: totalMin, overtimeMin }))
   }
@@ -131,7 +134,7 @@ export default function Timesheet() {
       setTaskModalOpen(false)
       reset()
       setEditingTask(null)
-    } catch (err) {
+    } catch {
       toast.error('Failed to save task')
     } finally {
       setSubmitting(false)
@@ -179,8 +182,16 @@ export default function Timesheet() {
     }
     setSubmitting(true)
     try {
+      const totalWorkMin = tasks.reduce((sum, task) => sum + (Number(task.durationMin) || 0), 0)
+      const overtimeMin = calcOvertimeMinutes(
+        totalWorkMin,
+        otPolicy?.stdHoursPerDay,
+        otPolicy?.roundingRule
+      )
       await updateDoc(doc(db, 'workdays', workday.id), {
         status: 'SUBMITTED',
+        totalWorkMin,
+        overtimeMin,
         submittedAt: serverTimestamp(),
       })
       await addDoc(collection(db, 'approvals'), {
@@ -192,7 +203,7 @@ export default function Timesheet() {
         comment: '',
         approvedAt: null,
       })
-      setWorkday((prev) => ({ ...prev, status: 'SUBMITTED' }))
+      setWorkday((prev) => ({ ...prev, status: 'SUBMITTED', totalWorkMin, overtimeMin }))
       toast.success('Timesheet submitted for approval!')
     } catch {
       toast.error('Submission failed')
@@ -201,9 +212,13 @@ export default function Timesheet() {
     }
   }
 
-  const totalMin = tasks.reduce((s, t) => s + (t.durationMin || 0), 0)
+  const totalMin = tasks.reduce((sum, task) => sum + (Number(task.durationMin) || 0), 0)
   const stdMin = (otPolicy?.stdHoursPerDay || 8) * 60
-  const otMin = Math.max(0, totalMin - stdMin)
+  const otMin = calcOvertimeMinutes(
+    totalMin,
+    otPolicy?.stdHoursPerDay,
+    otPolicy?.roundingRule
+  )
 
   return (
     <div className="p-6 space-y-6">

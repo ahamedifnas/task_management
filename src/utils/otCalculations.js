@@ -10,6 +10,21 @@ export function calcOTAmount(basicSalary, stdHoursPerDay, multiplier, overtimeMi
   return Math.round(otHourly * overtimeHours * 100) / 100
 }
 
+export function calcOvertimeMinutes(
+  totalWorkMinutes,
+  stdHoursPerDay = 8,
+  roundingRule = 'none'
+) {
+  const totalMinutes = Number(totalWorkMinutes) || 0
+  const standardMinutes = (Number(stdHoursPerDay) || 8) * 60
+  const overtimeMinutes = Math.max(0, totalMinutes - standardMinutes)
+
+  if (roundingRule === 'nearest_15') return Math.round(overtimeMinutes / 15) * 15
+  if (roundingRule === 'nearest_30') return Math.round(overtimeMinutes / 30) * 30
+  if (roundingRule === 'floor_hour') return Math.floor(overtimeMinutes / 60) * 60
+  return overtimeMinutes
+}
+
 export function minutesToHHMM(minutes) {
   if (!minutes || minutes <= 0) return '0h 0m'
   const h = Math.floor(minutes / 60)

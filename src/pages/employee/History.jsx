@@ -4,7 +4,7 @@ import { collection, query, where, orderBy, getDocs } from 'firebase/firestore'
 import { format } from 'date-fns'
 import { db } from '../../firebase/config'
 import { useAuth } from '../../contexts/AuthContext'
-import { minutesToHHMM } from '../../utils/otCalculations'
+import { calcOvertimeMinutes, minutesToHHMM } from '../../utils/otCalculations'
 import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
@@ -13,6 +13,7 @@ import { HiInbox } from 'react-icons/hi2'
 export default function History() {
   const { userProfile } = useAuth()
   const [workdays, setWorkdays] = useState([])
+  const [otPolicy, setOtPolicy] = useState(null)
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('ALL')
 
@@ -25,8 +26,12 @@ export default function History() {
           where('employeeId', '==', userProfile.uid),
           orderBy('workDate', 'desc')
         )
-        const snap = await getDocs(q)
-        setWorkdays(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        const [workdaySnap, policySnap] = await Promise.all([
+          getDocs(q),
+          getDocs(collection(db, 'otPolicy')),
+        ])
+        setWorkdays(workdaySnap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        if (!policySnap.empty) setOtPolicy(policySnap.docs[0].data())
       } finally {
         setLoading(false)
       }
@@ -39,7 +44,14 @@ export default function History() {
 
   const totalApprovedOT = workdays
     .filter((w) => w.status === 'APPROVED')
-    .reduce((s, w) => s + (w.overtimeMin || 0), 0)
+    .reduce(
+      (sum, workday) => sum + calcOvertimeMinutes(
+        workday.totalWorkMin,
+        otPolicy?.stdHoursPerDay,
+        otPolicy?.roundingRule
+      ),
+      0
+    )
 
   return (
     <div className="p-6 space-y-6">
@@ -99,7 +111,13 @@ export default function History() {
         />
       ) : (
         <div className="bg-slate-800 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
-          {filtered.map((day) => (
+          {filtered.map((day) => {
+            const overtimeMin = calcOvertimeMinutes(
+              day.totalWorkMin,
+              otPolicy?.stdHoursPerDay,
+              otPolicy?.roundingRule
+            )
+            return (
             <Link
               key={day.id}
               to={`/employee/timesheet?date=${day.workDate}`}
@@ -111,8 +129,8 @@ export default function History() {
                 </p>
                 <p className="text-slate-500 text-xs mt-0.5">
                   {minutesToHHMM(day.totalWorkMin || 0)} total work
-                  {day.overtimeMin > 0 && (
-                    <span className="text-amber-500 ml-2">· {minutesToHHMM(day.overtimeMin)} OT</span>
+                  {overtimeMin > 0 && (
+                    <span className="text-amber-500 ml-2">· {minutesToHHMM(overtimeMin)} OT</span>
                   )}
                 </p>
               </div>
@@ -123,7 +141,8 @@ export default function History() {
                 </svg>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
