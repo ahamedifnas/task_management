@@ -31,7 +31,11 @@ function RoleRedirect() {
     )
   }
   if (!userProfile) return <Navigate to="/login" replace />
-  const redirectMap = { admin: '/admin', supervisor: '/supervisor', employee: '/employee' }
+  const redirectMap = {
+    ADMIN: '/admin/dashboard',
+    SUPERVISOR: '/supervisor',
+    EMPLOYEE: '/employee',
+  }
   return <Navigate to={redirectMap[userProfile.role] || '/login'} replace />
 }
 
@@ -49,18 +53,19 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<RoleRedirect />} />
-        <Route path="/employee" element={<ProtectedRoute allowedRoles={['employee']}><Layout /></ProtectedRoute>}>
+        <Route path="/employee" element={<ProtectedRoute allowedRoles={['EMPLOYEE']}><Layout /></ProtectedRoute>}>
           <Route index element={<EmployeeDashboard />} />
           <Route path="timesheet" element={<Timesheet />} />
           <Route path="history" element={<History />} />
         </Route>
-        <Route path="/supervisor" element={<ProtectedRoute allowedRoles={['supervisor']}><Layout /></ProtectedRoute>}>
+        <Route path="/supervisor" element={<ProtectedRoute allowedRoles={['SUPERVISOR']}><Layout /></ProtectedRoute>}>
           <Route index element={<SupervisorDashboard />} />
           <Route path="pending" element={<PendingReviews />} />
           <Route path="team" element={<TeamOverview />} />
         </Route>
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Layout /></ProtectedRoute>}>
-          <Route index element={<AdminDashboard />} />
+        <Route path="/admin" element={<ProtectedRoute allowedRoles={['ADMIN']}><Layout /></ProtectedRoute>}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="employees" element={<EmployeeManagement />} />
           <Route path="projects" element={<ProjectManagement />} />
           <Route path="ot-policy" element={<OTPolicy />} />

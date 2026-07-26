@@ -4,68 +4,127 @@ import {
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
 import { auth, db } from '../firebase/config'
 
+const ADMIN_EMAIL = 'safni1012@gmail.com'
 const DEV_BYPASS = false
 
 const DEV_PROFILE = {
   uid: 'dev-user-001',
-  name: 'Dev Admin',
+  fullName: 'Dev Admin',
   email: 'dev@local.test',
-  role: 'admin',
+  role: 'ADMIN',
   department: 'IT',
-  basicSalary: 100000,
-  status: 'active',
+  salary: 0,
+  status: 'Active',
 }
 
 const AuthContext = createContext(null)
+const profileRequests = new Map()
+
+function getDefaultFullName(user) {
+  return (
+    user.displayName?.trim() ||
+    user.email?.split('@')[0] ||
+    'User'
+  )
+}
+
+function normalizeUserProfile(profile, user) {
+  const email = profile.email || user.email || ''
+
+  return {
+    ...profile,
+    uid: profile.uid || user.uid,
+    fullName: profile.fullName || profile.name || getDefaultFullName(user),
+    email,
+    role: email.toLowerCase() === ADMIN_EMAIL
+      ? 'ADMIN'
+      : String(profile.role || 'EMPLOYEE').toUpperCase(),
+    department: profile.department || 'IT',
+    salary: Number(profile.salary ?? profile.basicSalary ?? 0),
+    status: profile.status || 'Active',
+  }
+}
+
+async function loadOrCreateUserProfile(user) {
+  const existingRequest = profileRequests.get(user.uid)
+  if (existingRequest) return existingRequest
+
+  const request = (async () => {
+    const userReference = doc(db, 'users', user.uid)
+    const userSnapshot = await getDoc(userReference)
+
+    if (userSnapshot.exists()) {
+      return normalizeUserProfile(userSnapshot.data(), user)
+    }
+
+    const email = user.email || ''
+    const profile = {
+      uid: user.uid,
+      fullName: getDefaultFullName(user),
+      email,
+      role: email.toLowerCase() === ADMIN_EMAIL ? 'ADMIN' : 'EMPLOYEE',
+      department: 'IT',
+      salary: 0,
+      status: 'Active',
+      createdAt: serverTimestamp(),
+    }
+
+    await setDoc(userReference, profile)
+    return profile
+  })()
+
+  profileRequests.set(user.uid, request)
+
+  try {
+    return await request
+  } finally {
+    profileRequests.delete(user.uid)
+  }
+}
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(
     DEV_BYPASS ? DEV_PROFILE : null
   )
-
   const [userProfile, setUserProfile] = useState(
     DEV_BYPASS ? DEV_PROFILE : null
   )
-
   const [loading, setLoading] = useState(!DEV_BYPASS)
 
   async function login(email, password) {
+    setLoading(true)
+
     try {
-      console.log("Login started...");
+      const credential = await signInWithEmailAndPassword(auth, email, password)
+      const profile = await loadOrCreateUserProfile(credential.user)
 
-      const result = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      setCurrentUser(credential.user)
+      setUserProfile(profile)
 
-      console.log("Login Success");
-      console.log(result.user);
-
-      return result;
+      return { credential, profile }
     } catch (error) {
-      console.error("Login Error:", error);
-      throw error;
+      console.error('Login Error:', error)
+      throw error
+    } finally {
+      setLoading(false)
     }
   }
 
   async function logout() {
     await signOut(auth)
+    setCurrentUser(null)
     setUserProfile(null)
   }
 
   useEffect(() => {
     if (DEV_BYPASS) {
-      setLoading(false)
-      return
+      return undefined
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("AUTH STATE:", user)
-
       if (!user) {
         setCurrentUser(null)
         setUserProfile(null)
@@ -73,35 +132,18 @@ export function AuthProvider({ children }) {
         return
       }
 
+      setLoading(true)
       setCurrentUser(user)
 
       try {
-        const docRef = doc(db, "users", user.uid)
-        const docSnap = await getDoc(docRef)
-
-        console.log("Profile Exists:", docSnap.exists())
-
-        if (docSnap.exists()) {
-          console.log(docSnap.data())
-
-          setUserProfile({
-            uid: user.uid,
-            ...docSnap.data(),
-          })
-        } else {
-          console.log("No Firestore profile found")
-
-          setUserProfile({
-            uid: user.uid,
-            email: user.email,
-            role: "employee",
-          })
-        }
-      } catch (err) {
-        console.error("Firestore Error:", err)
+        const profile = await loadOrCreateUserProfile(user)
+        setUserProfile(profile)
+      } catch (error) {
+        console.error('Firestore profile error:', error)
+        setUserProfile(null)
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     })
 
     return unsubscribe
@@ -122,6 +164,8 @@ export function AuthProvider({ children }) {
   )
 }
 
+// AuthProvider and its consumer hook intentionally share this context module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext)
 }

@@ -19,16 +19,15 @@ const supervisorLinks = [
   { to: '/supervisor/team', label: 'Team Overview', icon: HiUserGroup },
 ]
 const adminLinks = [
-  { to: '/admin', label: 'Dashboard', icon: HiHome, end: true },
+  { to: '/admin/dashboard', label: 'Dashboard', icon: HiHome, end: true },
   { to: '/admin/employees', label: 'Employees', icon: HiUser },
   { to: '/admin/projects', label: 'Projects', icon: HiFolderOpen },
   { to: '/admin/ot-policy', label: 'OT Policy', icon: HiCog6Tooth },
   { to: '/admin/reports', label: 'Reports', icon: HiChartBarSquare },
 ]
 
-const roleLinks = { employee: employeeLinks, supervisor: supervisorLinks, admin: adminLinks }
-const roleLabels = { employee: 'Employee', supervisor: 'Supervisor', admin: 'Administrator' }
-const roleColors = { employee: 'text-sky-400', supervisor: 'text-violet-400', admin: 'text-emerald-400' }
+const roleLinks = { EMPLOYEE: employeeLinks, SUPERVISOR: supervisorLinks, ADMIN: adminLinks }
+const roleColors = { EMPLOYEE: 'text-sky-400', SUPERVISOR: 'text-violet-400', ADMIN: 'text-emerald-400' }
 
 export default function Sidebar({ mobile, onClose }) {
   const { userProfile, logout } = useAuth()
@@ -49,8 +48,8 @@ export default function Sidebar({ mobile, onClose }) {
     }
   }
 
-  const initials = userProfile?.name
-    ? userProfile.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+  const initials = userProfile?.fullName
+    ? userProfile.fullName.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : '?'
 
   return (
@@ -78,9 +77,9 @@ export default function Sidebar({ mobile, onClose }) {
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{userProfile?.name || 'User'}</p>
+            <p className="text-white text-sm font-medium truncate">{userProfile?.fullName || 'User'}</p>
             <p className={`text-xs font-medium ${roleColors[userProfile?.role] || 'text-slate-400'}`}>
-              {roleLabels[userProfile?.role] || userProfile?.role}
+              {userProfile?.role || 'EMPLOYEE'}
             </p>
           </div>
         </div>

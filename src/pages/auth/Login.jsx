@@ -5,29 +5,33 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function Login() {
-  const { login, userProfile } = useAuth()
+  const { login } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const { register, handleSubmit, formState: { errors } } = useForm()
 
- async function onSubmit({ email, password }) {
-  setLoading(true)
+  async function onSubmit({ email, password }) {
+    setLoading(true)
 
-  try {
-    await login(email, password)
+    try {
+      const { profile } = await login(email, password)
+      const redirectMap = {
+        ADMIN: '/admin/dashboard',
+        SUPERVISOR: '/supervisor',
+        EMPLOYEE: '/employee',
+      }
 
-    // Temporary redirect
-    navigate("/")
-  } catch (err) {
-    toast.error(
-      err.code === "auth/invalid-credential"
-        ? "Invalid email or password"
-        : "Login failed"
-    )
-  } finally {
-    setLoading(false)
+      navigate(redirectMap[profile.role] || '/employee', { replace: true })
+    } catch (err) {
+      toast.error(
+        err.code === 'auth/invalid-credential'
+          ? 'Invalid email or password'
+          : 'Login failed'
+      )
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">

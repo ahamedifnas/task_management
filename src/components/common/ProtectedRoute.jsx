@@ -16,9 +16,14 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!DEV_BYPASS && !currentUser) return <Navigate to="/login" replace />
+  if (!userProfile) return <Navigate to="/login" replace />
 
-  if (allowedRoles && userProfile && !allowedRoles.includes(userProfile.role)) {
-    const redirectMap = { admin: '/admin', supervisor: '/supervisor', employee: '/employee' }
+  if (allowedRoles && !allowedRoles.includes(userProfile.role)) {
+    const redirectMap = {
+      ADMIN: '/admin/dashboard',
+      SUPERVISOR: '/supervisor',
+      EMPLOYEE: '/employee',
+    }
     return <Navigate to={redirectMap[userProfile.role] || '/login'} replace />
   }
 
