@@ -224,12 +224,12 @@ export default function EmployeeManagement() {
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-white text-2xl font-bold">Employee Management</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Manage staff accounts and roles</p>
+          <h1 className="text-slate-900 dark:text-white text-2xl font-bold">Employee Management</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">Manage staff accounts and roles</p>
         </div>
         <button
           onClick={openNew}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors duration-300"
         >
           <span>+</span><span>Add Employee</span>
         </button>
@@ -241,7 +241,7 @@ export default function EmployeeManagement() {
           placeholder="Search employees..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-sm px-4 py-2.5 bg-slate-800 border border-slate-600 text-white placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full max-w-sm px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
         />
       </div>
 
@@ -250,38 +250,38 @@ export default function EmployeeManagement() {
       ) : filtered.length === 0 ? (
         <EmptyState icon={<HiUser className="w-12 h-12" />} title="No employees found" description="Add your first employee to get started" />
       ) : (
-        <div className="bg-slate-800 rounded-xl border border-slate-700/50 overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden transition-colors duration-300">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-700/50">
-                  <th className="text-left px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Name</th>
-                  <th className="text-left px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Role</th>
-                  <th className="text-left px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Department</th>
-                  <th className="text-left px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Salary</th>
-                  <th className="text-left px-5 py-3 text-slate-400 text-xs font-medium uppercase tracking-wider">Status</th>
+                <tr className="border-b border-slate-200 dark:border-slate-700/50">
+                  <th className="text-left px-5 py-3 text-slate-600 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Name</th>
+                  <th className="text-left px-5 py-3 text-slate-600 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Role</th>
+                  <th className="text-left px-5 py-3 text-slate-600 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Department</th>
+                  <th className="text-left px-5 py-3 text-slate-600 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Salary</th>
+                  <th className="text-left px-5 py-3 text-slate-600 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">Status</th>
                   <th className="px-5 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-700/50">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50">
                 {filtered.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-700/20 transition-colors">
+                  <tr key={emp.id} className="hover:bg-slate-100 dark:hover:bg-slate-700/20 transition-colors duration-300">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-600/30 flex items-center justify-center text-indigo-400 font-semibold text-xs shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-600/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-semibold text-xs shrink-0">
                           {emp.name?.charAt(0) || '?'}
                         </div>
                         <div>
-                          <p className="text-slate-200 text-sm font-medium">{emp.name}</p>
+                          <p className="text-slate-800 dark:text-slate-200 text-sm font-medium">{emp.name}</p>
                           <p className="text-slate-500 text-xs">{emp.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="capitalize text-slate-300 text-sm">{emp.role}</span>
+                      <span className="capitalize text-slate-700 dark:text-slate-300 text-sm">{emp.role}</span>
                     </td>
-                    <td className="px-5 py-4 text-slate-400 text-sm">{emp.department || '—'}</td>
-                    <td className="px-5 py-4 text-slate-300 text-sm">
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-400 text-sm">{emp.department || '—'}</td>
+                    <td className="px-5 py-4 text-slate-700 dark:text-slate-300 text-sm">
                       {emp.basicSalary ? `LKR ${Number(emp.basicSalary).toLocaleString()}` : '—'}
                     </td>
                     <td className="px-5 py-4"><StatusBadge status={emp.status || 'active'} /></td>
@@ -289,22 +289,22 @@ export default function EmployeeManagement() {
                       <div className="flex items-center gap-2 justify-end">
                         <button
                           onClick={() => openEdit(emp)}
-                          className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors duration-300"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => openDelete(emp)}
-                          className="px-3 py-1.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
+                          className="px-3 py-1.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors duration-300"
                         >
                           Delete
                         </button>
                         <button
                           onClick={() => toggleStatus(emp)}
-                          className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                          className={`px-3 py-1.5 text-xs rounded-lg transition-colors duration-300 ${
                             emp.status === 'active'
-                              ? 'bg-red-900/30 text-red-400 hover:bg-red-800/50 border border-red-700/50'
-                              : 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-800/50 border border-emerald-700/50'
+                              ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/50 border border-red-200 dark:border-red-700/50'
+                              : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-800/50 border border-emerald-200 dark:border-emerald-700/50'
                           }`}
                         >
                           {emp.status === 'active' ? 'Deactivate' : 'Activate'}
@@ -328,45 +328,45 @@ export default function EmployeeManagement() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Full Name</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Full Name</label>
               <input
                 type="text"
                 placeholder="John Doe"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                 {...register('name', { required: 'Name is required' })}
               />
-              {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
+              {errors.name && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.name.message}</p>}
             </div>
 
             {!editingEmp && (
               <>
                 <div>
-                  <label className="block text-slate-300 text-sm font-medium mb-1.5">Email</label>
+                  <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Email</label>
                   <input
                     type="email"
                     placeholder="john@company.com"
-                    className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                     {...register('email', { required: 'Email required', pattern: { value: /\S+@\S+\.\S+/, message: 'Invalid email' } })}
                   />
-                  {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+                  {errors.email && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.email.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm font-medium mb-1.5">Password</label>
+                  <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Password</label>
                   <input
                     type="password"
                     placeholder="Min 6 chars"
-                    className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                     {...register('password', { required: 'Password required', minLength: { value: 6, message: 'Min 6 chars' } })}
                   />
-                  {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+                  {errors.password && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.password.message}</p>}
                 </div>
               </>
             )}
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Role</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Role</label>
               <select
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                 {...register('role', { required: true })}
               >
                 {ROLES.map((r) => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
@@ -374,9 +374,9 @@ export default function EmployeeManagement() {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Department</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Department</label>
               <select
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                 {...register('department')}
               >
                 <option value="">Select...</option>
@@ -385,21 +385,21 @@ export default function EmployeeManagement() {
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Basic Salary (LKR)</label>
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Basic Salary (LKR)</label>
               <input
                 type="number"
                 placeholder="50000"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                 {...register('basicSalary', { required: 'Salary required', min: { value: 1, message: 'Must be > 0' } })}
               />
-              {errors.basicSalary && <p className="text-red-400 text-xs mt-1">{errors.basicSalary.message}</p>}
+              {errors.basicSalary && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.basicSalary.message}</p>}
             </div>
 
             {editingEmp && (
               <div>
-                <label className="block text-slate-300 text-sm font-medium mb-1.5">Status</label>
+                <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">Status</label>
                 <select
-                  className="w-full px-3 py-2.5 bg-slate-900 border border-slate-600 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
                   {...register('status')}
                 >
                   <option value="active">Active</option>
@@ -413,7 +413,7 @@ export default function EmployeeManagement() {
             <button
               type="button"
               onClick={() => { setModalOpen(false); setEditingEmp(null) }}
-              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm"
+              className="flex-1 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-sm"
             >
               Cancel
             </button>
@@ -435,29 +435,29 @@ export default function EmployeeManagement() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-slate-300 text-sm">
+          <p className="text-slate-700 dark:text-slate-300 text-sm">
             Are you sure you want to permanently delete this employee?
           </p>
 
-          <div className="bg-slate-900/50 rounded-lg px-4 py-3 space-y-2">
-            <p className="text-slate-300 text-sm">
-              <span className="text-slate-400">Employee Name:</span>{' '}
+          <div className="bg-slate-100/70 dark:bg-slate-900/50 rounded-lg px-4 py-3 space-y-2">
+            <p className="text-slate-700 dark:text-slate-300 text-sm">
+              <span className="text-slate-600 dark:text-slate-400">Employee Name:</span>{' '}
               {deleteTarget?.name}
             </p>
-            <p className="text-slate-300 text-sm">
-              <span className="text-slate-400">Employee Email:</span>{' '}
+            <p className="text-slate-700 dark:text-slate-300 text-sm">
+              <span className="text-slate-600 dark:text-slate-400">Employee Email:</span>{' '}
               {deleteTarget?.email}
             </p>
           </div>
 
-          <p className="text-red-400 text-sm">This action cannot be undone.</p>
+          <p className="text-red-600 dark:text-red-400 text-sm">This action cannot be undone.</p>
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={closeDeleteDialogs}
               disabled={checkingRelated || deleting}
-              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm disabled:opacity-60"
+              className="flex-1 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-sm disabled:opacity-60"
             >
               Cancel
             </button>
@@ -480,7 +480,7 @@ export default function EmployeeManagement() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-slate-300 text-sm">
+          <p className="text-slate-700 dark:text-slate-300 text-sm">
             This employee has existing records.<br />
             Delete all related records?
           </p>
@@ -490,7 +490,7 @@ export default function EmployeeManagement() {
               type="button"
               onClick={closeDeleteDialogs}
               disabled={deleting}
-              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm disabled:opacity-60"
+              className="flex-1 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-sm disabled:opacity-60"
             >
               Cancel
             </button>

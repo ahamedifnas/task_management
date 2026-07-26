@@ -25,7 +25,7 @@ function RoleRedirect() {
   const { userProfile, loading } = useAuth()
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center transition-colors duration-300">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
       </div>
     )
@@ -45,7 +45,12 @@ export default function App() {
       <Toaster
         position="top-right"
         toastOptions={{
-          style: { background: '#1e293b', color: '#f1f5f9', border: '1px solid #334155' },
+          style: {
+            background: 'var(--toast-bg)',
+            color: 'var(--toast-color)',
+            border: '1px solid var(--toast-border)',
+            transition: 'background-color 300ms, color 300ms, border-color 300ms',
+          },
           success: { iconTheme: { primary: '#10b981', secondary: '#f1f5f9' } },
           error: { iconTheme: { primary: '#ef4444', secondary: '#f1f5f9' } },
         }}

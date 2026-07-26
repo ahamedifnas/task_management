@@ -3,7 +3,7 @@ export default function LoadingSpinner({ size = 'md', text = '' }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-8">
       <div className={`animate-spin rounded-full border-b-2 border-indigo-500 ${sizes[size]}`} />
-      {text && <p className="text-slate-400 text-sm">{text}</p>}
+      {text && <p className="text-slate-600 dark:text-slate-400 text-sm transition-colors duration-300">{text}</p>}
     </div>
   )
 }

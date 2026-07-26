@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center transition-colors duration-300">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500" />
       </div>
     )

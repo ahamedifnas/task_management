@@ -35,10 +35,10 @@ export default function AdminDashboard() {
   }, [])
 
   const cards = [
-    { label: 'Active Employees', value: stats.employees, icon: HiUser, color: 'text-sky-400', to: '/admin/employees' },
-    { label: 'Active Projects', value: stats.projects, icon: HiFolderOpen, color: 'text-violet-400', to: '/admin/projects' },
-    { label: 'Pending Approvals', value: stats.pending, icon: HiClock, color: 'text-amber-400', to: '/admin/reports' },
-    { label: 'Approved This Month', value: stats.approved, icon: HiCheckCircle, color: 'text-emerald-400', to: '/admin/reports' },
+    { label: 'Active Employees', value: stats.employees, icon: HiUser, color: 'text-sky-600 dark:text-sky-400', to: '/admin/employees' },
+    { label: 'Active Projects', value: stats.projects, icon: HiFolderOpen, color: 'text-violet-600 dark:text-violet-400', to: '/admin/projects' },
+    { label: 'Pending Approvals', value: stats.pending, icon: HiClock, color: 'text-amber-600 dark:text-amber-400', to: '/admin/reports' },
+    { label: 'Approved This Month', value: stats.approved, icon: HiCheckCircle, color: 'text-emerald-600 dark:text-emerald-400', to: '/admin/reports' },
   ]
 
   const quickLinks = [
@@ -51,8 +51,8 @@ export default function AdminDashboard() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-white text-2xl font-bold">Admin Dashboard</h1>
-        <p className="text-slate-400 text-sm mt-0.5">{format(new Date(), 'EEEE, MMMM do yyyy')}</p>
+        <h1 className="text-slate-900 dark:text-white text-2xl font-bold">Admin Dashboard</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">{format(new Date(), 'EEEE, MMMM do yyyy')}</p>
       </div>
 
       {loading ? (
@@ -63,10 +63,10 @@ export default function AdminDashboard() {
             {cards.map((c) => {
               const Icon = c.icon
               return (
-                <Link key={c.label} to={c.to} className="bg-slate-800 rounded-xl border border-slate-700/50 p-4 hover:border-slate-600 transition-colors group">
+                <Link key={c.label} to={c.to} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors duration-300 group">
                   <div className="flex items-center gap-2 mb-2">
                     <Icon className={`w-4 h-4 ${c.color}`} />
-                    <span className="text-slate-400 text-xs">{c.label}</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-xs">{c.label}</span>
                   </div>
                   <p className={`text-2xl font-bold ${c.color}`}>{c.value}</p>
                 </Link>
@@ -81,15 +81,15 @@ export default function AdminDashboard() {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="bg-slate-800 rounded-xl border border-slate-700/50 p-5 hover:border-indigo-500/50 hover:bg-slate-700/50 transition-all group"
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 p-5 hover:border-indigo-500/50 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all group"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-indigo-400" />
+                    <div className="w-10 h-10 rounded-lg bg-indigo-100/70 dark:bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
-                      <p className="text-white font-medium group-hover:text-indigo-300 transition-colors">{l.label}</p>
-                      <p className="text-slate-400 text-sm mt-0.5">{l.desc}</p>
+                      <p className="text-slate-900 dark:text-white font-medium group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300">{l.label}</p>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">{l.desc}</p>
                     </div>
                   </div>
                 </Link>

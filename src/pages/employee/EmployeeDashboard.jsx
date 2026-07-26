@@ -46,25 +46,25 @@ export default function EmployeeDashboard() {
       label: "Today's Status",
       value: todayWorkday ? todayWorkday.status : 'No Entry',
       icon: HiClipboardDocumentList,
-      color: 'text-indigo-400',
+      color: 'text-indigo-600 dark:text-indigo-400',
     },
     {
       label: "Today's Hours",
       value: todayWorkday ? minutesToHHMM(todayWorkday.totalWorkMin || 0) : '—',
       icon: HiClock,
-      color: 'text-sky-400',
+      color: 'text-sky-600 dark:text-sky-400',
     },
     {
       label: 'Overtime Today',
       value: todayWorkday ? minutesToHHMM(todayWorkday.overtimeMin || 0) : '—',
       icon: HiArrowTrendingUp,
-      color: 'text-amber-400',
+      color: 'text-amber-600 dark:text-amber-400',
     },
     {
       label: 'Submissions This Week',
       value: recentDays.filter((d) => ['SUBMITTED', 'APPROVED'].includes(d.status)).length,
       icon: HiCheckCircle,
-      color: 'text-emerald-400',
+      color: 'text-emerald-600 dark:text-emerald-400',
     },
   ]
 
@@ -73,16 +73,16 @@ export default function EmployeeDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-white text-2xl font-bold">
+          <h1 className="text-slate-900 dark:text-white text-2xl font-bold">
             Good {getGreeting()}, {userProfile?.name?.split(' ')[0] || 'there'}
           </h1>
-          <p className="text-slate-400 text-sm mt-0.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">
             {format(new Date(), 'EEEE, MMMM do yyyy')}
           </p>
         </div>
         <Link
           to="/employee/timesheet"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors duration-300 shadow-lg shadow-indigo-500/20"
         >
           <span>+</span>
           <span>{todayWorkday ? "Update Today's Timesheet" : "Start Today's Timesheet"}</span>
@@ -98,10 +98,10 @@ export default function EmployeeDashboard() {
             {stats.map((stat) => {
               const Icon = stat.icon
               return (
-                <div key={stat.label} className="bg-slate-800 rounded-xl border border-slate-700/50 p-4">
+                <div key={stat.label} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 p-4 transition-colors duration-300">
                   <div className="flex items-center gap-2 mb-2">
                     <Icon className={`w-4 h-4 ${stat.color}`} />
-                    <span className="text-slate-400 text-xs">{stat.label}</span>
+                    <span className="text-slate-600 dark:text-slate-400 text-xs">{stat.label}</span>
                   </div>
                   <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
                 </div>
@@ -110,32 +110,32 @@ export default function EmployeeDashboard() {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-slate-800 rounded-xl border border-slate-700/50">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50">
-              <h2 className="text-white font-semibold">Recent Timesheets</h2>
-              <Link to="/employee/history" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 transition-colors duration-300">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700/50">
+              <h2 className="text-slate-900 dark:text-white font-semibold">Recent Timesheets</h2>
+              <Link to="/employee/history" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm transition-colors duration-300">
                 View all →
               </Link>
             </div>
             {recentDays.length === 0 ? (
               <div className="py-12 text-center">
-                <HiInbox className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400 font-medium">No timesheets yet</p>
+                <HiInbox className="w-10 h-10 text-slate-500 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-600 dark:text-slate-400 font-medium">No timesheets yet</p>
                 <p className="text-slate-500 text-sm mt-1">Start by creating today's entry</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-700/50">
+              <div className="divide-y divide-slate-200 dark:divide-slate-700/50">
                 {recentDays.map((day) => (
                   <Link
                     key={day.id}
                     to={`/employee/timesheet?date=${day.workDate}`}
-                    className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-700/30 transition-colors group"
+                    className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-300 group"
                   >
                     <div>
-                      <p className="text-slate-200 text-sm font-medium group-hover:text-white transition-colors">
+                      <p className="text-slate-800 dark:text-slate-200 text-sm font-medium group-hover:text-slate-900 dark:group-hover:text-slate-900 dark:hover:text-white transition-colors duration-300">
                         {format(new Date(day.workDate + 'T00:00:00'), 'EEE, MMM d')}
                         {day.workDate === today && (
-                          <span className="ml-2 text-xs bg-indigo-600/30 text-indigo-400 px-2 py-0.5 rounded-full">Today</span>
+                          <span className="ml-2 text-xs bg-indigo-100 dark:bg-indigo-600/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">Today</span>
                         )}
                       </p>
                       <p className="text-slate-500 text-xs mt-0.5">

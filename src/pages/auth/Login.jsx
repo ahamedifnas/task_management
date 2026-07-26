@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
+import ThemeToggle from '../../components/common/ThemeToggle'
 
 export default function Login() {
   const { login } = useAuth()
@@ -34,58 +35,61 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors duration-300">
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 shadow-lg shadow-indigo-500/30">
             <span className="text-white font-bold text-2xl">T</span>
           </div>
-          <h1 className="text-white text-2xl font-bold">Timesheet Manager</h1>
-          <p className="text-slate-400 text-sm mt-1">Overtime & Task Management System</p>
+          <h1 className="text-slate-900 dark:text-white text-2xl font-bold">Timesheet Manager</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Overtime & Task Management System</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-8 shadow-2xl">
-          <h2 className="text-white font-semibold text-lg mb-6">Sign In</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-8 shadow-2xl transition-colors duration-300">
+          <h2 className="text-slate-900 dark:text-white font-semibold text-lg mb-6">Sign In</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">
                 Email Address
               </label>
               <input
                 type="email"
                 placeholder="you@company.com"
-                className={`w-full px-4 py-3 rounded-lg bg-slate-900 border text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
-                  errors.email ? 'border-red-500' : 'border-slate-600 hover:border-slate-500'
+                className={`w-full px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-900 border text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
+                  errors.email ? 'border-red-500' : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
                 }`}
                 {...register('email', {
                   required: 'Email is required',
                   pattern: { value: /\S+@\S+\.\S+/, message: 'Invalid email' },
                 })}
               />
-              {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
+              {errors.email && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">
                 Password
               </label>
               <input
                 type="password"
                 placeholder="••••••••"
-                className={`w-full px-4 py-3 rounded-lg bg-slate-900 border text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
-                  errors.password ? 'border-red-500' : 'border-slate-600 hover:border-slate-500'
+                className={`w-full px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-900 border text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${
+                  errors.password ? 'border-red-500' : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
                 }`}
                 {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Min 6 characters' } })}
               />
-              {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
+              {errors.password && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800"
+              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-50 dark:focus:ring-offset-slate-800"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -100,7 +104,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-slate-600 text-xs mt-6">
+        <p className="text-center text-slate-500 dark:text-slate-600 text-xs mt-6">
           Contact your administrator for account access
         </p>
       </div>

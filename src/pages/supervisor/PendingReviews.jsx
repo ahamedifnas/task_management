@@ -116,32 +116,32 @@ export default function PendingReviews() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-white text-2xl font-bold">Pending Reviews</h1>
-        <p className="text-slate-400 text-sm mt-0.5">Review and approve team timesheets</p>
+        <h1 className="text-slate-900 dark:text-white text-2xl font-bold">Pending Reviews</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">Review and approve team timesheets</p>
       </div>
 
       {loading ? (
         <LoadingSpinner text="Loading submissions..." />
       ) : approvals.length === 0 ? (
         <EmptyState
-          icon={<HiCheckCircle className="w-12 h-12 text-emerald-500" />}
+          icon={<HiCheckCircle className="w-12 h-12 text-emerald-600 dark:text-emerald-500" />}
           title="All caught up!"
           description="No pending timesheets to review"
         />
       ) : (
-        <div className="bg-slate-800 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/50 divide-y divide-slate-200 dark:divide-slate-700/50 transition-colors duration-300">
           {approvals.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between px-5 py-4 hover:bg-slate-700/30 transition-colors cursor-pointer"
+              className="flex items-center justify-between px-5 py-4 hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-300 cursor-pointer"
               onClick={() => openDetail(item)}
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-semibold text-sm shrink-0">
+                <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-semibold text-sm shrink-0">
                   {item.employee?.name?.charAt(0) || '?'}
                 </div>
                 <div>
-                  <p className="text-slate-200 text-sm font-medium">{item.employee?.name || 'Unknown'}</p>
+                  <p className="text-slate-800 dark:text-slate-200 text-sm font-medium">{item.employee?.name || 'Unknown'}</p>
                   <p className="text-slate-500 text-xs mt-0.5">
                     {item.workday?.workDate
                       ? format(new Date(item.workday.workDate + 'T00:00:00'), 'EEE, MMM d, yyyy')
@@ -158,7 +158,7 @@ export default function PendingReviews() {
               <div className="flex items-center gap-3">
                 <StatusBadge status="SUBMITTED" />
                 <button
-                  className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 text-xs font-medium rounded-lg transition-colors border border-indigo-500/30"
+                  className="px-3 py-1.5 bg-indigo-100/70 dark:bg-indigo-600/20 hover:bg-indigo-100 dark:hover:bg-indigo-600/40 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded-lg transition-colors duration-300 border border-indigo-500/30"
                   onClick={(e) => { e.stopPropagation(); openDetail(item) }}
                 >
                   Review
@@ -180,21 +180,21 @@ export default function PendingReviews() {
           <div className="space-y-4">
             {/* Info */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-slate-900/50 rounded-lg p-3">
+              <div className="bg-slate-100/70 dark:bg-slate-900/50 rounded-lg p-3">
                 <p className="text-slate-500 text-xs mb-1">Date</p>
-                <p className="text-slate-200 text-sm font-medium">
+                <p className="text-slate-800 dark:text-slate-200 text-sm font-medium">
                   {selectedApproval.workday?.workDate
                     ? format(new Date(selectedApproval.workday.workDate + 'T00:00:00'), 'MMM d, yyyy')
                     : '—'}
                 </p>
               </div>
-              <div className="bg-slate-900/50 rounded-lg p-3">
+              <div className="bg-slate-100/70 dark:bg-slate-900/50 rounded-lg p-3">
                 <p className="text-slate-500 text-xs mb-1">Total Work</p>
-                <p className="text-sky-400 text-sm font-bold">{minutesToHHMM(selectedApproval.workday?.totalWorkMin)}</p>
+                <p className="text-sky-600 dark:text-sky-400 text-sm font-bold">{minutesToHHMM(selectedApproval.workday?.totalWorkMin)}</p>
               </div>
-              <div className="bg-slate-900/50 rounded-lg p-3">
+              <div className="bg-slate-100/70 dark:bg-slate-900/50 rounded-lg p-3">
                 <p className="text-slate-500 text-xs mb-1">Overtime</p>
-                <p className="text-amber-400 text-sm font-bold">
+                <p className="text-amber-600 dark:text-amber-400 text-sm font-bold">
   {minutesToHHMM(Number(selectedApproval.workday?.overtimeMin) || 0)}
 </p>
               </div>
@@ -202,22 +202,22 @@ export default function PendingReviews() {
 
             {/* Tasks */}
             <div>
-              <h3 className="text-slate-300 text-sm font-medium mb-2">Tasks</h3>
+              <h3 className="text-slate-700 dark:text-slate-300 text-sm font-medium mb-2">Tasks</h3>
               <div className="space-y-2">
                 {tasks.map((task) => {
                   const proj = projects.find((p) => p.id === task.projectId)
                   return (
-                    <div key={task.id} className="bg-slate-900/50 rounded-lg p-3">
+                    <div key={task.id} className="bg-slate-100/70 dark:bg-slate-900/50 rounded-lg p-3">
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="text-xs font-mono text-slate-400">
+                        <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
                           {task.startTime} – {task.endTime}
                         </span>
-                        <span className="text-xs text-amber-400 font-medium">{minutesToHHMM(task.durationMin)}</span>
+                        <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">{minutesToHHMM(task.durationMin)}</span>
                       </div>
-                      {proj && <p className="text-indigo-400 text-xs mb-0.5">{proj.projectName}</p>}
-                      <p className="text-slate-200 text-sm">{task.description}</p>
+                      {proj && <p className="text-indigo-600 dark:text-indigo-400 text-xs mb-0.5">{proj.projectName}</p>}
+                      <p className="text-slate-800 dark:text-slate-200 text-sm">{task.description}</p>
                       {task.workReport && (
-                        <p className="text-slate-400 text-xs mt-1">{task.workReport}</p>
+                        <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">{task.workReport}</p>
                       )}
                     </div>
                   )
@@ -227,7 +227,7 @@ export default function PendingReviews() {
 
             {/* Comment */}
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">
+              <label className="block text-slate-700 dark:text-slate-300 text-sm font-medium mb-1.5">
                 Comment <span className="text-slate-500 font-normal">(optional for approval, recommended for rejection)</span>
               </label>
               <textarea
@@ -235,7 +235,7 @@ export default function PendingReviews() {
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Add a comment..."
                 rows={2}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-600 text-white placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none transition-colors duration-300"
               />
             </div>
 
@@ -244,7 +244,7 @@ export default function PendingReviews() {
               <button
                 onClick={() => handleDecision('reject')}
                 disabled={processing}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-900/30 hover:bg-red-800/50 disabled:opacity-60 text-red-400 font-medium rounded-lg text-sm border border-red-700/50 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-800/50 disabled:opacity-60 text-red-600 dark:text-red-400 font-medium rounded-lg text-sm border border-red-200 dark:border-red-700/50 transition-colors duration-300"
               >
                 <HiXMark className="w-4 h-4" />
                 <span>{processing ? 'Processing...' : 'Reject'}</span>
@@ -252,7 +252,7 @@ export default function PendingReviews() {
               <button
                 onClick={() => handleDecision('approve')}
                 disabled={processing}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm transition-colors duration-300"
               >
                 <HiCheck className="w-4 h-4" />
                 <span>{processing ? 'Processing...' : 'Approve'}</span>
