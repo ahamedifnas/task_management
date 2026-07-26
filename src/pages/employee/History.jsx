@@ -1,57 +1,56 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 import { format } from 'date-fns'
 import { db } from '../../firebase/config'
 import { useAuth } from '../../contexts/AuthContext'
-import { calcOvertimeMinutes, minutesToHHMM } from '../../utils/otCalculations'
+import { minutesToHHMM } from '../../utils/otCalculations'
 import StatusBadge from '../../components/common/StatusBadge'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import EmptyState from '../../components/common/EmptyState'
 import { HiInbox } from 'react-icons/hi2'
 
 export default function History() {
-  const { userProfile } = useAuth()
+  const { currentUser, userProfile } = useAuth()
   const [workdays, setWorkdays] = useState([])
-  const [otPolicy, setOtPolicy] = useState(null)
   const [loading, setLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState('ALL')
+  const employeeId = currentUser?.uid || userProfile?.uid
 
   useEffect(() => {
-    if (!userProfile?.uid) return
+    if (!employeeId) return
+
     async function fetchHistory() {
+      setLoading(true)
       try {
         const q = query(
           collection(db, 'workdays'),
-          where('employeeId', '==', userProfile.uid),
-          orderBy('workDate', 'desc')
+          where('employeeId', '==', employeeId)
         )
-        const [workdaySnap, policySnap] = await Promise.all([
-          getDocs(q),
-          getDocs(collection(db, 'otPolicy')),
-        ])
-        setWorkdays(workdaySnap.docs.map((d) => ({ id: d.id, ...d.data() })))
-        if (!policySnap.empty) setOtPolicy(policySnap.docs[0].data())
+
+        const workdaySnap = await getDocs(q)
+        const employeeWorkdays = workdaySnap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .sort((a, b) => (b.workDate || '').localeCompare(a.workDate || ''))
+
+        setWorkdays(employeeWorkdays)
+      } catch (error) {
+        console.error('Failed to load timesheet history:', error)
+        setWorkdays([])
       } finally {
         setLoading(false)
       }
     }
+
     fetchHistory()
-  }, [userProfile])
+  }, [employeeId])
 
   const filtered = filterStatus === 'ALL' ? workdays : workdays.filter((w) => w.status === filterStatus)
   const statuses = ['ALL', 'DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED']
 
   const totalApprovedOT = workdays
     .filter((w) => w.status === 'APPROVED')
-    .reduce(
-      (sum, workday) => sum + calcOvertimeMinutes(
-        workday.totalWorkMin,
-        otPolicy?.stdHoursPerDay,
-        otPolicy?.roundingRule
-      ),
-      0
-    )
+    .reduce((sum, workday) => sum + (Number(workday.overtimeMin) || 0), 0)
 
   return (
     <div className="p-6 space-y-6">
@@ -112,17 +111,13 @@ export default function History() {
       ) : (
         <div className="bg-slate-800 rounded-xl border border-slate-700/50 divide-y divide-slate-700/50">
           {filtered.map((day) => {
-            const overtimeMin = calcOvertimeMinutes(
-              day.totalWorkMin,
-              otPolicy?.stdHoursPerDay,
-              otPolicy?.roundingRule
-            )
+            const overtimeMin = Number(day.overtimeMin) || 0
             return (
-            <Link
-              key={day.id}
-              to={`/employee/timesheet?date=${day.workDate}`}
-              className="flex items-center justify-between px-5 py-4 hover:bg-slate-700/30 transition-colors group"
-            >
+              <Link
+                key={day.id}
+                to={`/employee/timesheet?date=${day.workDate}`}
+                className="flex items-center justify-between px-5 py-4 hover:bg-slate-700/30 transition-colors group"
+              >
               <div>
                 <p className="text-slate-200 text-sm font-medium group-hover:text-white">
                   {format(new Date(day.workDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
@@ -140,7 +135,7 @@ export default function History() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
-            </Link>
+              </Link>
             )
           })}
         </div>
