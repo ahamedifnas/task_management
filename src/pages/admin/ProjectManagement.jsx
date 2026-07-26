@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore'
+import {
+  collection, getDocs, addDoc, updateDoc, doc, serverTimestamp, query, where, writeBatch,
+} from 'firebase/firestore'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { db } from '../../firebase/config'
@@ -9,6 +11,40 @@ import EmptyState from '../../components/common/EmptyState'
 import Modal from '../../components/common/Modal'
 import { HiFolderOpen } from 'react-icons/hi2'
 
+const FIRESTORE_BATCH_LIMIT = 500
+
+async function getProjectTaskRecords(projectId) {
+  const workdaySnapshot = await getDocs(collection(db, 'workdays'))
+  const taskSnapshots = await Promise.all(
+    workdaySnapshot.docs.map((workday) =>
+      getDocs(
+        query(
+          collection(db, 'workdays', workday.id, 'tasks'),
+          where('projectId', '==', projectId)
+        )
+      )
+    )
+  )
+
+  return taskSnapshots.flatMap((snapshot) => snapshot.docs)
+}
+
+async function deleteDocumentRefs(documentRefs) {
+  for (let index = 0; index < documentRefs.length; index += FIRESTORE_BATCH_LIMIT) {
+    const batch = writeBatch(db)
+    documentRefs
+      .slice(index, index + FIRESTORE_BATCH_LIMIT)
+      .forEach((documentRef) => batch.delete(documentRef))
+    await batch.commit()
+  }
+}
+
+async function deleteProjectData(projectId, taskRecords) {
+  const documentRefs = taskRecords.map((task) => task.ref)
+  documentRefs.push(doc(db, 'projects', projectId))
+  await deleteDocumentRefs(documentRefs)
+}
+
 export default function ProjectManagement() {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,20 +52,32 @@ export default function ProjectManagement() {
   const [editingProj, setEditingProj] = useState(null)
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [projectTaskRecords, setProjectTaskRecords] = useState([])
+  const [usedProjectOpen, setUsedProjectOpen] = useState(false)
+  const [checkingUsage, setCheckingUsage] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
-  useEffect(() => { fetchProjects() }, [])
+  useEffect(() => {
+    let active = true
 
-  async function fetchProjects() {
-    setLoading(true)
-    try {
-      const snap = await getDocs(collection(db, 'projects'))
-      setProjects(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-    } finally {
-      setLoading(false)
-    }
-  }
+    getDocs(collection(db, 'projects'))
+      .then((snap) => {
+        if (active) {
+          setProjects(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to load projects:', error)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => { active = false }
+  }, [])
 
   function openNew() {
     setEditingProj(null)
@@ -71,6 +119,59 @@ export default function ProjectManagement() {
       toast.success('Status updated')
     } catch {
       toast.error('Failed to update status')
+    }
+  }
+
+  function openDelete(proj) {
+    setDeleteTarget(proj)
+    setProjectTaskRecords([])
+    setUsedProjectOpen(false)
+  }
+
+  function closeDeleteDialogs() {
+    if (checkingUsage || deleting) return
+    setDeleteTarget(null)
+    setProjectTaskRecords([])
+    setUsedProjectOpen(false)
+  }
+
+  async function performDelete(project, taskRecords) {
+    setDeleting(true)
+    const toastId = toast.loading('Deleting...')
+
+    try {
+      await deleteProjectData(project.id, taskRecords)
+      setProjects((prev) => prev.filter((item) => item.id !== project.id))
+      setDeleteTarget(null)
+      setProjectTaskRecords([])
+      setUsedProjectOpen(false)
+      toast.success('Project deleted successfully.', { id: toastId })
+    } catch (error) {
+      console.error('Delete project failed:', error)
+      toast.error('Delete failed.', { id: toastId })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return
+
+    setCheckingUsage(true)
+    try {
+      const taskRecords = await getProjectTaskRecords(deleteTarget.id)
+      setProjectTaskRecords(taskRecords)
+
+      if (taskRecords.length > 0) {
+        setUsedProjectOpen(true)
+      } else {
+        await performDelete(deleteTarget, taskRecords)
+      }
+    } catch (error) {
+      console.error('Project usage check failed:', error)
+      toast.error('Delete failed.')
+    } finally {
+      setCheckingUsage(false)
     }
   }
 
@@ -128,6 +229,12 @@ export default function ProjectManagement() {
                   className="flex-1 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
                 >
                   Edit
+                </button>
+                <button
+                  onClick={() => openDelete(proj)}
+                  className="flex-1 py-1.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
+                >
+                  Delete
                 </button>
                 <button
                   onClick={() => toggleStatus(proj)}
@@ -188,6 +295,83 @@ export default function ProjectManagement() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteTarget) && !usedProjectOpen}
+        onClose={closeDeleteDialogs}
+        title="Delete Project"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-300 text-sm">
+            Are you sure you want to permanently delete this project?
+          </p>
+
+          <div className="bg-slate-900/50 rounded-lg px-4 py-3 space-y-2">
+            <p className="text-slate-300 text-sm">
+              <span className="text-slate-400">Project Name:</span>{' '}
+              {deleteTarget?.projectName}
+            </p>
+            <p className="text-slate-300 text-sm">
+              <span className="text-slate-400">Project Owner:</span>{' '}
+              {deleteTarget?.projectOwner || deleteTarget?.clientName || '—'}
+            </p>
+          </div>
+
+          <p className="text-red-400 text-sm">This action cannot be undone.</p>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={closeDeleteDialogs}
+              disabled={checkingUsage || deleting}
+              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={checkingUsage || deleting}
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm"
+            >
+              {checkingUsage ? 'Checking...' : deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={usedProjectOpen}
+        onClose={closeDeleteDialogs}
+        title="Delete Project"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-300 text-sm">
+            This project is already used in timesheets.
+          </p>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={closeDeleteDialogs}
+              disabled={deleting}
+              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => performDelete(deleteTarget, projectTaskRecords)}
+              disabled={deleting}
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm"
+            >
+              {deleting ? 'Deleting...' : 'Delete Everything'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

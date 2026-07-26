@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, doc, setDoc, updateDoc, query, where } from 'firebase/firestore'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import {
+  collection, getDocs, doc, setDoc, updateDoc, query, where, writeBatch,
+} from 'firebase/firestore'
+import { createUserWithEmailAndPassword, deleteUser } from 'firebase/auth'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { auth, db } from '../../firebase/config'
@@ -12,6 +14,64 @@ import { HiUser } from 'react-icons/hi2'
 
 const ROLES = ['employee', 'supervisor', 'admin']
 const DEPARTMENTS = ['Engineering', 'Sales', 'HR', 'Finance', 'Operations', 'Marketing', 'IT', 'Other']
+const FIRESTORE_BATCH_LIMIT = 500
+
+async function getRelatedEmployeeRecords(employeeId) {
+  const [workdays, approvals, monthlySummaries] = await Promise.all([
+    getDocs(query(collection(db, 'workdays'), where('employeeId', '==', employeeId))),
+    getDocs(query(collection(db, 'approvals'), where('employeeId', '==', employeeId))),
+    getDocs(query(collection(db, 'monthlySummary'), where('employeeId', '==', employeeId))),
+  ])
+
+  return { workdays, approvals, monthlySummaries }
+}
+
+function hasRelatedEmployeeRecords(relatedRecords) {
+  return Object.values(relatedRecords).some((snapshot) => !snapshot.empty)
+}
+
+async function deleteDocumentRefs(documentRefs) {
+  for (let index = 0; index < documentRefs.length; index += FIRESTORE_BATCH_LIMIT) {
+    const batch = writeBatch(db)
+    documentRefs
+      .slice(index, index + FIRESTORE_BATCH_LIMIT)
+      .forEach((documentRef) => batch.delete(documentRef))
+    await batch.commit()
+  }
+}
+
+async function deleteEmployeeFirestoreData(employeeId, relatedRecords, deleteRelated) {
+  const documentRefs = []
+
+  if (deleteRelated) {
+    const taskSnapshots = await Promise.all(
+      relatedRecords.workdays.docs.map((workday) =>
+        getDocs(collection(db, 'workdays', workday.id, 'tasks'))
+      )
+    )
+
+    taskSnapshots.forEach((taskSnapshot) => {
+      taskSnapshot.docs.forEach((task) => documentRefs.push(task.ref))
+    })
+    relatedRecords.workdays.docs.forEach((workday) => documentRefs.push(workday.ref))
+    relatedRecords.approvals.docs.forEach((approval) => documentRefs.push(approval.ref))
+    relatedRecords.monthlySummaries.docs.forEach((summary) => documentRefs.push(summary.ref))
+  }
+
+  documentRefs.push(doc(db, 'users', employeeId))
+  await deleteDocumentRefs(documentRefs)
+}
+
+async function deleteEmployeeAuthenticationUser(employeeId) {
+  if (auth.currentUser?.uid === employeeId) {
+    await deleteUser(auth.currentUser)
+    return
+  }
+
+  // TODO: Firebase Client SDK cannot delete another authenticated user.
+  // Use the Firebase Admin SDK in a secure backend or a callable Cloud Function
+  // to permanently delete the Authentication account for this employeeId.
+}
 
 export default function EmployeeManagement() {
   const [employees, setEmployees] = useState([])
@@ -20,20 +80,29 @@ export default function EmployeeManagement() {
   const [editingEmp, setEditingEmp] = useState(null)
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [relatedRecords, setRelatedRecords] = useState(null)
+  const [relatedDeleteOpen, setRelatedDeleteOpen] = useState(false)
+  const [checkingRelated, setCheckingRelated] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
-  useEffect(() => { fetchEmployees() }, [])
+  useEffect(() => {
+    let active = true
 
-  async function fetchEmployees() {
-    setLoading(true)
-    try {
-      const snap = await getDocs(collection(db, 'users'))
-      setEmployees(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
-    } finally {
-      setLoading(false)
-    }
-  }
+    getDocs(collection(db, 'users'))
+      .then((snap) => {
+        if (active) {
+          setEmployees(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => { active = false }
+  }, [])
 
   function openNew() {
     setEditingEmp(null)
@@ -90,6 +159,60 @@ export default function EmployeeManagement() {
       toast.success(`Employee ${newStatus === 'active' ? 'activated' : 'deactivated'}`)
     } catch {
       toast.error('Failed to update status')
+    }
+  }
+
+  function openDelete(emp) {
+    setDeleteTarget(emp)
+    setRelatedRecords(null)
+    setRelatedDeleteOpen(false)
+  }
+
+  function closeDeleteDialogs() {
+    if (checkingRelated || deleting) return
+    setDeleteTarget(null)
+    setRelatedRecords(null)
+    setRelatedDeleteOpen(false)
+  }
+
+  async function performDelete(employee, records, deleteRelated) {
+    setDeleting(true)
+    const toastId = toast.loading('Deleting...')
+
+    try {
+      await deleteEmployeeFirestoreData(employee.id, records, deleteRelated)
+      await deleteEmployeeAuthenticationUser(employee.id)
+      setEmployees((prev) => prev.filter((item) => item.id !== employee.id))
+      setDeleteTarget(null)
+      setRelatedRecords(null)
+      setRelatedDeleteOpen(false)
+      toast.success('Employee deleted successfully.', { id: toastId })
+    } catch (error) {
+      console.error('Delete employee failed:', error)
+      toast.error('Delete failed.', { id: toastId })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return
+
+    setCheckingRelated(true)
+    try {
+      const records = await getRelatedEmployeeRecords(deleteTarget.id)
+      setRelatedRecords(records)
+
+      if (hasRelatedEmployeeRecords(records)) {
+        setRelatedDeleteOpen(true)
+      } else {
+        await performDelete(deleteTarget, records, false)
+      }
+    } catch (error) {
+      console.error('Related employee record check failed:', error)
+      toast.error('Delete failed.')
+    } finally {
+      setCheckingRelated(false)
     }
   }
 
@@ -169,6 +292,12 @@ export default function EmployeeManagement() {
                           className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors"
                         >
                           Edit
+                        </button>
+                        <button
+                          onClick={() => openDelete(emp)}
+                          className="px-3 py-1.5 text-xs bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors"
+                        >
+                          Delete
                         </button>
                         <button
                           onClick={() => toggleStatus(emp)}
@@ -297,6 +426,84 @@ export default function EmployeeManagement() {
             </button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteTarget) && !relatedDeleteOpen}
+        onClose={closeDeleteDialogs}
+        title="Delete Employee"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-300 text-sm">
+            Are you sure you want to permanently delete this employee?
+          </p>
+
+          <div className="bg-slate-900/50 rounded-lg px-4 py-3 space-y-2">
+            <p className="text-slate-300 text-sm">
+              <span className="text-slate-400">Employee Name:</span>{' '}
+              {deleteTarget?.name}
+            </p>
+            <p className="text-slate-300 text-sm">
+              <span className="text-slate-400">Employee Email:</span>{' '}
+              {deleteTarget?.email}
+            </p>
+          </div>
+
+          <p className="text-red-400 text-sm">This action cannot be undone.</p>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={closeDeleteDialogs}
+              disabled={checkingRelated || deleting}
+              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={checkingRelated || deleting}
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm"
+            >
+              {checkingRelated ? 'Checking...' : deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={relatedDeleteOpen}
+        onClose={closeDeleteDialogs}
+        title="Delete Employee"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-300 text-sm">
+            This employee has existing records.<br />
+            Delete all related records?
+          </p>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={closeDeleteDialogs}
+              disabled={deleting}
+              className="flex-1 py-2.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-sm disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => performDelete(deleteTarget, relatedRecords, true)}
+              disabled={deleting}
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white font-medium rounded-lg text-sm"
+            >
+              {deleting ? 'Deleting...' : 'Delete Everything'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )
